@@ -165,7 +165,7 @@ func (v *V2RayPoint) pointloop() error {
 }
 
 func (v *V2RayPoint) MeasureDelay() (int64, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 12*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 
 	go func() {
 		select {
@@ -258,7 +258,7 @@ func measureInstDelay(ctx context.Context, inst *v2core.Instance) (int64, error)
 	}
 
 	tr := &http.Transport{
-		TLSHandshakeTimeout: 6 * time.Second,
+		TLSHandshakeTimeout: 10 * time.Second,
 		DisableKeepAlives:   true,
 		DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
 			dest, err := v2net.ParseDestination(fmt.Sprintf("%s:%s", network, addr))
@@ -271,7 +271,7 @@ func measureInstDelay(ctx context.Context, inst *v2core.Instance) (int64, error)
 
 	c := &http.Client{
 		Transport: tr,
-		Timeout:   12 * time.Second,
+		Timeout:   15 * time.Second,
 	}
 
 	req, _ := http.NewRequestWithContext(ctx, "GET", "https://www.google.com/generate_204", nil)
