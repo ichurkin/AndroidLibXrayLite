@@ -29,8 +29,10 @@ import (
 )
 
 const (
-	v2Asset = "xray.location.asset"
-	xudpBaseKey = "xray.xudp.basekey"
+	v2Asset             = "xray.location.asset"
+	xudpBaseKey         = "xray.xudp.basekey"
+	default204Url       = "https://www.google.com/generate_204"
+	delayTimeoutSeconds = 9
 )
 
 /*V2RayPoint V2Ray Point Server
@@ -166,6 +168,10 @@ func (v *V2RayPoint) pointloop() error {
 }
 
 func (v *V2RayPoint) MeasureDelay() (int64, error) {
+	return v.MeasureDelayTo(default204Url)
+}
+
+func (v *V2RayPoint) MeasureDelayTo(url string) (int64, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 
 	go func() {
@@ -177,7 +183,7 @@ func (v *V2RayPoint) MeasureDelay() (int64, error) {
 		}
 	}()
 
-	return measureInstDelay(ctx, v.Vpoint)
+	return measureInstDelay(ctx, v.Vpoint, url)
 }
 
 // InitV2Env set v2 asset path
@@ -208,6 +214,10 @@ func TestConfig(ConfigureFileContent string) error {
 }
 
 func MeasureOutboundDelay(ConfigureFileContent string) (int64, error) {
+	return MeasureOutboundDelayTo(ConfigureFileContent, default204Url)
+}
+
+func MeasureOutboundDelayTo(ConfigureFileContent string, url string) (int64, error) {
 	config, err := v2serial.LoadJSONConfig(strings.NewReader(ConfigureFileContent))
 	if err != nil {
 		return -1, err
@@ -225,7 +235,7 @@ func MeasureOutboundDelay(ConfigureFileContent string) (int64, error) {
 	}
 
 	inst.Start()
-	delay, err := measureInstDelay(context.Background(), inst)
+	delay, err := measureInstDelay(context.Background(), inst, url)
 	inst.Close()
 	return delay, err
 }
@@ -256,13 +266,13 @@ func CheckVersionX() string {
 	return fmt.Sprintf("Lib v%d, Xray-core v%s", version, v2core.Version())
 }
 
-func measureInstDelay(ctx context.Context, inst *v2core.Instance) (int64, error) {
+func measureInstDelay(ctx context.Context, inst *v2core.Instance, url string) (int64, error) {
 	if inst == nil {
 		return -1, errors.New("core instance nil")
 	}
 
 	tr := &http.Transport{
-		TLSHandshakeTimeout: 10 * time.Second,
+		TLSHandshakeTimeout: delayTimeoutSeconds * time.Second,
 		DisableKeepAlives:   true,
 		DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
 			dest, err := v2net.ParseDestination(fmt.Sprintf("%s:%s", network, addr))
@@ -275,10 +285,9 @@ func measureInstDelay(ctx context.Context, inst *v2core.Instance) (int64, error)
 
 	c := &http.Client{
 		Transport: tr,
-		Timeout:   15 * time.Second,
+		Timeout:   delayTimeoutSeconds * time.Second,
 	}
-
-	req, _ := http.NewRequestWithContext(ctx, "GET", "https://www.google.com/generate_204", nil)
+	req, _ := http.NewRequestWithContext(ctx, "GET", url, nil)
 	start := time.Now()
 	resp, err := c.Do(req)
 	if err != nil {
