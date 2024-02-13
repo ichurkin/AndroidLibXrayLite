@@ -10,7 +10,7 @@ __file="${__dir}/$(basename "${BASH_SOURCE[0]}")"
 __base="$(basename ${__file} .sh)"
 
 
-DATADIR=${__dir}/data
+DATADIR=${__dir}/assets
 
 compile_dat () {
     local TMPDIR=$(mktemp -d)
