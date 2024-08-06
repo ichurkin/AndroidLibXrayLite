@@ -263,7 +263,7 @@ func NewV2RayPoint(s V2RayVPNServiceSupportsSet, adns bool) *V2RayPoint {
 This func will return libv2ray binding version and V2Ray version used.
 */
 func CheckVersionX() string {
-	var version  = 26
+	var version  = 27
 	return fmt.Sprintf("Lib v%d, Xray-core v%s", version, v2core.Version())
 }
 
@@ -294,8 +294,8 @@ func measureInstDelay(ctx context.Context, inst *v2core.Instance, url string, ti
 	if err != nil {
 		return -1, err
 	}
-	if resp.StatusCode != http.StatusNoContent {
-		return -1, fmt.Errorf("status != 204: %s", resp.Status)
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+		return -1, fmt.Errorf("status != 20x: %s", resp.Status)
 	}
 	resp.Body.Close()
 	return time.Since(start).Milliseconds(), nil
