@@ -208,12 +208,6 @@ func InitV2Env(envPath string, key string) {
 	}
 }
 
-//Delegate Funcation
-func TestConfig(ConfigureFileContent string) error {
-	_, err := v2serial.LoadJSONConfig(strings.NewReader(ConfigureFileContent))
-	return err
-}
-
 func MeasureOutboundDelay(ConfigureFileContent string) (int64, error) {
 	return MeasureOutboundDelayTo(ConfigureFileContent, default204Url, defaultTimeoutSeconds)
 }
