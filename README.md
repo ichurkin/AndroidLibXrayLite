@@ -3,8 +3,9 @@
 ## Build requirements
 * JDK
 * Android SDK
-* Go
+* Go, use exact go version from go.mod and xray-core to reduce possible runtime errors
 * gomobile
+
 
 ## Build instructions
 1. `git clone [repo] && cd AndroidLibXrayLite`
