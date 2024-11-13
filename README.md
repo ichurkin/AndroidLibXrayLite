@@ -11,4 +11,4 @@
 1. `git clone [repo] && cd AndroidLibXrayLite`
 2. `gomobile init`
 3. `go mod tidy -v`
-4. `gomobile bind -v -androidapi 19 -ldflags='-s -w' ./`
+4. `gomobile bind -v -androidapi 21 -ldflags='-s -w' ./`
