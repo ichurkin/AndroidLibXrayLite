@@ -16,10 +16,14 @@ import (
 
 	mobasset "golang.org/x/mobile/asset"
 
+	v2core "github.com/xtls/xray-core/core"
 	v2net "github.com/xtls/xray-core/common/net"
 	v2filesystem "github.com/xtls/xray-core/common/platform/filesystem"
+<<<<<<< HEAD
+=======
 	"github.com/xtls/xray-core/common/serial"
 	v2core "github.com/xtls/xray-core/core"
+>>>>>>> main
 	v2stats "github.com/xtls/xray-core/features/stats"
 	v2serial "github.com/xtls/xray-core/infra/conf/serial"
 	_ "github.com/xtls/xray-core/main/distro/all"
@@ -231,7 +235,6 @@ func MeasureOutboundDelayTo(ConfigureFileContent string, url string, timeoutSeco
 	}
 	config.App = essentialApp
 
-
 	inst, err := v2core.New(config)
 	if err != nil {
 		return -1, err
@@ -265,7 +268,11 @@ func NewV2RayPoint(s V2RayVPNServiceSupportsSet, adns bool) *V2RayPoint {
 This func will return libv2ray binding version and V2Ray version used.
 */
 func CheckVersionX() string {
-	var version  = 30
+<<<<<<< HEAD
+	var version  = 27
+=======
+	var version = 30
+>>>>>>> main
 	return fmt.Sprintf("Lib v%d, Xray-core v%s", version, v2core.Version())
 }
 
