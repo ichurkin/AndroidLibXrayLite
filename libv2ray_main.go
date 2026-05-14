@@ -24,15 +24,17 @@ import (
   corestats "github.com/xtls/xray-core/features/stats"
   coreserial "github.com/xtls/xray-core/infra/conf/serial"
   _ "github.com/xtls/xray-core/main/distro/all"
+  browser_dialer "github.com/xtls/xray-core/transport/internet/browser_dialer"
   mobasset "golang.org/x/mobile/asset"
 )
 
 // Constants for environment variables
 const (
-  coreAsset   = "xray.location.asset"
-  coreCert    = "xray.location.cert"
-  xudpBaseKey = "xray.xudp.basekey"
-  tunFdKey    = "xray.tun.fd"
+  coreAsset            = "xray.location.asset"
+  coreCert             = "xray.location.cert"
+  xudpBaseKey          = "xray.xudp.basekey"
+  tunFdKey             = "xray.tun.fd"
+  browserDialerAddress = "xray.browser.dialer"
   defaultTimeoutSeconds = 9
 )
 
@@ -209,8 +211,15 @@ func MeasureOutboundDelayTo(ConfigureFileContent string, url string, timeoutSeco
 
 // CheckVersionX returns the library and Xray versions
 func CheckVersionX() string {
-  var version = 35
+  var version = 36
   return fmt.Sprintf("Lib v%d, Xray-core v%s", version, core.Version())
+}
+
+// ReconcileBrowserDialer updates the browser dialer address and reloads its configuration
+// If the dialer address is empty, it will disable the browser dialer and close existing connections
+func ReconcileBrowserDialer(dialerAddr string) {
+  setEnvVariable(browserDialerAddress, dialerAddr)
+  browser_dialer.Reload()
 }
 
 // doShutdown shuts down the Xray instance and cleans up resources
