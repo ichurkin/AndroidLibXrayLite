@@ -35,7 +35,8 @@ const (
   xudpBaseKey          = "xray.xudp.basekey"
   tunFdKey             = "xray.tun.fd"
   browserDialerAddress = "xray.browser.dialer"
-  defaultTimeoutSeconds = 9
+  defaultTimeoutSec    = 9
+  libVersion           = 38 // Library version, update here only
 )
 
 // CoreController represents a controller for managing Xray core instance lifecycle
@@ -155,11 +156,45 @@ func (x *CoreController) QueryStats(tag string, direct string) int64 {
   return counter.Set(0)
 }
 
+// QueryAllOutboundTrafficStats retrieves and resets all outbound traffic counters.
+// Returns a single-line text in format: tag,direction,value;tag,direction,value;
+// Returns an empty string if the stats manager is not initialized or no counters exist.
+func (x *CoreController) QueryAllOutboundTrafficStats() string {
+  if x.statsManager == nil {
+    return ""
+  }
+
+  var b strings.Builder
+
+  x.statsManager.VisitCounters(func(name string, counter corestats.Counter) bool {
+    parts := strings.Split(name, ">>>")
+    if len(parts) != 4 || parts[0] != "outbound" || parts[2] != "traffic" {
+      return true
+    }
+
+    tag := parts[1]
+    direct := parts[3]
+    value := counter.Set(0)
+    if value <= 0 {
+      return true // Skip counters with non-positive values
+    }
+
+    b.WriteString(tag)
+    b.WriteByte(',')
+    b.WriteString(direct)
+    b.WriteByte(',')
+    b.WriteString(strconv.FormatInt(value, 10))
+    b.WriteByte(';')
+    return true
+  })
+  return b.String()
+}
+
 // MeasureDelay measures network latency to a specified URL through the current core instance
 // Uses a 12-second timeout context and returns the round-trip time in milliseconds
 // An error is returned if the connection fails or returns an unexpected status
 func (x *CoreController) MeasureDelay(url string) (int64, error) {
-  return x.MeasureDelayTo(url, defaultTimeoutSeconds)
+  return x.MeasureDelayTo(url, defaultTimeoutSec)
 }
 
 // MeasureDelay measures network latency to a specified URL through the current core instance
@@ -175,7 +210,7 @@ func (x *CoreController) MeasureDelayTo(url string, timeoutSeconds int32) (int64
 
 // MeasureOutboundDelay measures the outbound delay for a given configuration and URL
 func MeasureOutboundDelay(ConfigureFileContent string, url string) (int64, error) {
-  return MeasureOutboundDelayTo(ConfigureFileContent, url, defaultTimeoutSeconds)
+  return MeasureOutboundDelayTo(ConfigureFileContent, url, defaultTimeoutSec)
 }
 
 // MeasureOutboundDelayTo measures the outbound delay for a given configuration, URL and timeout
@@ -211,8 +246,7 @@ func MeasureOutboundDelayTo(ConfigureFileContent string, url string, timeoutSeco
 
 // CheckVersionX returns the library and Xray versions
 func CheckVersionX() string {
-  var version = 36
-  return fmt.Sprintf("Lib v%d, Xray-core v%s", version, core.Version())
+  return fmt.Sprintf("Lib v%d, Xray-core v%s", libVersion, core.Version())
 }
 
 // ReconcileBrowserDialer updates the browser dialer address and reloads its configuration
