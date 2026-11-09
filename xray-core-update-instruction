@@ -1,0 +1,6 @@
+git ls-remote https://github.com/XTLS/Xray-core 'refs/tags/{version}*'
+
+
+bash
+go get github.com/xtls/xray-core@<hash>
+go mod tidy
